@@ -19,26 +19,23 @@ class CommandHandler:
             return self.ai.module_loader.execute_module(args[1:])
         elif cmd == "exploit":
             if len(args) > 1:
-                return self.ai.advanced_exploitation.run_exploit(args[1:])
+                return self.ai.exploit_framework.run_exploit(args[1:])
             else:
                 return "No exploit specified."
-        elif cmd == "multi_exploit":
+        elif cmd == "scan":
             if len(args) > 1:
-                return self.ai.multi_stage_exploit.run_multi_stage_exploit(args[1:])
+                return self.ai.vulnerability_scanner.scan_target(args[1:])
             else:
-                return "No multi-stage exploit specified."
-        elif cmd == "vuln_check":
+                return "No target specified for scanning."
+        elif cmd == "session":
             if len(args) > 1:
-                return self.ai.vulnerability_database.check_vulnerabilities(args[1:])
+                return self.ai.session_manager.handle_session_command(args[1:])
             else:
-                return "No target specified for vulnerability check."
-        elif cmd == "post_exploit":
-            if len(args) > 1:
-                return self.ai.post_exploitation.perform_post_exploit(args[1:])
-            else:
-                return "No target specified for post-exploitation."
+                return "No session command specified."
         elif cmd == "report":
             return self.ai.reporting.generate_report(args[1:])
+        elif cmd == "menu":
+            return self.ai.interactive_menu.show_main_menu()
         else:
             return f"Command '{cmd}' is not supported."
     
@@ -50,11 +47,11 @@ class CommandHandler:
         cd <directory>              : Change the current directory.
         ls                          : List the contents of the current directory.
         exec <module> <args>        : Execute a specified module.
-        exploit <type> <target>     : Execute an advanced exploit on a target.
-        multi_exploit <target>      : Execute a multi-stage exploit on a target.
-        vuln_check <target>         : Check the target against a vulnerability database.
-        post_exploit <target>       : Perform post-exploitation techniques.
-        report                      : Generate a detailed report of the session.
+        exploit <type> <target>     : Execute an exploit on a target.
+        scan <target>               : Scan a target for vulnerabilities.
+        session <command> <args>    : Manage sessions (save, load, list, delete).
+        report                      : Generate a report of the session.
+        menu                        : Open the interactive menu.
         =========================================
         """
         return help_text
