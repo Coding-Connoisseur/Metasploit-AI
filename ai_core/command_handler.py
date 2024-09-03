@@ -1,6 +1,7 @@
 # ai_core/command_handler.py
 
 import os
+import readline
 
 class CommandHandler:
     def __init__(self, ai):
@@ -8,6 +9,18 @@ class CommandHandler:
         self.history_file = "command_history.txt"
         self.command_history = []
         self.load_history()
+        self.commands = ["cd", "ls", "exec", "exploit", "scan", "session", "history", "notify", "help", "exit"]
+        self.setup_autocomplete()
+
+    def setup_autocomplete(self):
+        readline.set_completer(self.autocomplete)
+        readline.parse_and_bind("tab: complete")
+
+    def autocomplete(self, text, state):
+        options = [cmd for cmd in self.commands if cmd.startswith(text)]
+        if state < len(options):
+            return options[state]
+        return None
 
     def execute_command(self, command):
         self.command_history.append(command)
@@ -27,7 +40,7 @@ class CommandHandler:
             return self.ai.module_loader.execute_module(args[1:])
         elif cmd == "exploit":
             if len(args) > 1:
-                return self.ai.exploit_framework.run_exploit(args[1:])
+                return self.ai.exploit_framework.run_exploit(args[1:], args[2:])
             else:
                 return "No exploit specified."
         elif cmd == "scan":
@@ -46,8 +59,10 @@ class CommandHandler:
             return self.ai.logging_manager.send_notification(args[1:])
         elif cmd == "help":
             return self.show_help()
+        elif cmd == "exit":
+            return "Exiting."
         else:
-            return self.contextual_help(cmd)
+            return f"Command '{cmd}' not supported."
 
     def load_history(self):
         if os.path.exists(self.history_file):
@@ -75,20 +90,7 @@ class CommandHandler:
         history                     : Show command history.
         notify <message>            : Send a notification.
         help                        : Show this help menu.
+        exit                        : Exit the program.
         =========================================
         """
-        print(help_text)
         return help_text
-
-    def contextual_help(self, command):
-        help_dict = {
-            "cd": "Change the current directory. Usage: cd <directory>",
-            "ls": "List the contents of the current directory. Usage: ls",
-            "exec": "Execute a specified module. Usage: exec <module> <args>",
-            "exploit": "Execute an exploit on a target. Usage: exploit <type> <target>",
-            "scan": "Scan a target for vulnerabilities. Usage: scan <target>",
-            "session": "Manage sessions. Usage: session <command> <args>",
-            "history": "Show command history. Usage: history",
-            "notify": "Send a notification. Usage: notify <message>",
-        }
-        return help_dict.get(command, f"No help available for command '{command}'")
