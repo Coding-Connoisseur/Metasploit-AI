@@ -8,7 +8,7 @@ class SessionManager:
         self.ai = ai
         self.sessions_dir = "sessions"
         os.makedirs(self.sessions_dir, exist_ok=True)
-        self.active_session = None
+        self.active_sessions = {}
 
     def handle_session_command(self, args):
         action = args[0]
@@ -37,7 +37,7 @@ class SessionManager:
         }
         with open(session_path, 'w') as f:
             json.dump(session_data, f)
-        self.active_session = name
+        self.active_sessions[name] = session_data
         self.ai.logging_manager.log_info(f"Session '{name}' saved.")
         return f"Session '{name}' saved."
 
@@ -50,8 +50,8 @@ class SessionManager:
         with open(session_path, 'r') as f:
             session_data = json.load(f)
         self.ai.cwd = session_data.get("cwd", self.ai.cwd)
+        self.active_sessions[name] = session_data
         self.ai.logging_manager.log_info(f"Session '{name}' loaded.")
-        self.active_session = name
         return f"Session '{name}' loaded."
 
     def list_sessions(self):
@@ -64,7 +64,7 @@ class SessionManager:
         session_path = os.path.join(self.sessions_dir, f"{name}.json")
         if os.path.exists(session_path):
             os.remove(session_path)
-            del self.active_session
+            del self.active_sessions[name]
             self.ai.logging_manager.log_info(f"Session '{name}' deleted.")
             return f"Session '{name}' deleted."
         else:
@@ -73,9 +73,10 @@ class SessionManager:
     def switch_session(self, name):
         if not name:
             return "No session name provided."
-        session_path = os.path.join(self.sessions_dir, f"{name}.json")
-        if os.path.exists(session_path):
-            self.load_session(name)
+        if name in self.active_sessions:
+            session_data = self.active_sessions[name]
+            self.ai.cwd = session_data.get("cwd", self.ai.cwd)
+            self.ai.logging_manager.log_info(f"Switched to session '{name}'.")
             return f"Switched to session '{name}'."
         else:
             return f"Session '{name}' not found."
