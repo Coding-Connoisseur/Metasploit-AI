@@ -1,10 +1,18 @@
 # ai_core/command_handler.py
 
+import os
+
 class CommandHandler:
     def __init__(self, ai):
         self.ai = ai
+        self.history_file = "command_history.txt"
+        self.command_history = []
+        self.load_history()
 
     def execute_command(self, command):
+        self.command_history.append(command)
+        self.save_history()
+        self.ai.logging_manager.log_info(f"Executing command: {command}")
         args = command.split()
         if not args:
             return "No command entered."
@@ -32,13 +40,25 @@ class CommandHandler:
                 return self.ai.session_manager.handle_session_command(args[1:])
             else:
                 return "No session command specified."
-        elif cmd == "report":
-            return self.ai.reporting.generate_report(args[1:])
-        elif cmd == "menu":
-            return self.ai.interactive_menu.show_main_menu()
+        elif cmd == "history":
+            return self.show_history()
+        elif cmd == "notify":
+            return self.ai.logging_manager.send_notification(args[1:])
         else:
             return f"Command '{cmd}' is not supported."
-    
+
+    def load_history(self):
+        if os.path.exists(self.history_file):
+            with open(self.history_file, 'r') as f:
+                self.command_history = f.read().splitlines()
+
+    def save_history(self):
+        with open(self.history_file, 'w') as f:
+            f.write("\n".join(self.command_history))
+
+    def show_history(self):
+        return "\n".join(self.command_history)
+
     def show_help(self):
         help_text = """
         =========================================
@@ -50,8 +70,8 @@ class CommandHandler:
         exploit <type> <target>     : Execute an exploit on a target.
         scan <target>               : Scan a target for vulnerabilities.
         session <command> <args>    : Manage sessions (save, load, list, delete).
-        report                      : Generate a report of the session.
-        menu                        : Open the interactive menu.
+        history                     : Show command history.
+        notify <message>            : Send a notification.
         =========================================
         """
         return help_text
