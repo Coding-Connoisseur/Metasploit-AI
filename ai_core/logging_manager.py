@@ -33,13 +33,4 @@ class LoggingManager:
         report_file = f"report_{session_data['session_name']}.txt" if session_data else "session_report.txt"
         with open(report_file, 'w') as f:
             f.write("Session Report\n")
-            f.write("=================\n")
-            for action in self.session_actions:
-                f.write(f"{action['timestamp']}: {action['description']}\n")
-        logging.info(f"Report generated: {report_file}")
-        return f"Report generated: {report_file}"
-
-    def send_notification(self, message):
-        # Placeholder for sending real-time notifications
-        print(f"Notification: {' '.join(message)}")
-        self.log_info(f"Notification sent: {' '.join(message)}")
+            f.write("================
