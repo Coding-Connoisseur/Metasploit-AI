@@ -44,6 +44,8 @@ class CommandHandler:
             return self.show_history()
         elif cmd == "notify":
             return self.ai.logging_manager.send_notification(args[1:])
+        elif cmd == "help":
+            return self.show_help()
         else:
             return f"Command '{cmd}' is not supported."
 
@@ -72,6 +74,8 @@ class CommandHandler:
         session <command> <args>    : Manage sessions (save, load, list, delete).
         history                     : Show command history.
         notify <message>            : Send a notification.
+        help                        : Show this help menu.
         =========================================
         """
+        print(help_text)
         return help_text
