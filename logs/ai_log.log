@@ -10,3 +10,4 @@
 2024-09-03 17:43:33 - INFO - Performing detailed scan on 192.168.0.1
 2024-09-03 17:43:33 - INFO - Scanning 192.168.0.1 for vulnerabilities
 2024-09-03 17:43:33 - INFO - Suggested exploits: sql_injection, xss
+2024-09-03 17:55:48 - INFO - Executing command: history
