@@ -22,6 +22,8 @@ class SessionManager:
             return self.list_sessions()
         elif action == "delete":
             return self.delete_session(name)
+        elif action == "switch":
+            return self.switch_session(name)
         else:
             return "Invalid session command."
 
@@ -62,7 +64,18 @@ class SessionManager:
         session_path = os.path.join(self.sessions_dir, f"{name}.json")
         if os.path.exists(session_path):
             os.remove(session_path)
+            del self.active_session
             self.ai.logging_manager.log_info(f"Session '{name}' deleted.")
             return f"Session '{name}' deleted."
+        else:
+            return f"Session '{name}' not found."
+
+    def switch_session(self, name):
+        if not name:
+            return "No session name provided."
+        session_path = os.path.join(self.sessions_dir, f"{name}.json")
+        if os.path.exists(session_path):
+            self.load_session(name)
+            return f"Switched to session '{name}'."
         else:
             return f"Session '{name}' not found."
