@@ -1,0 +1,7 @@
+2024-09-03 08:30:13 - INFO - Version file not found, initializing new version.
+2024-09-03 08:30:19 - WARNING - Command not recognized: ls
+2024-09-03 08:33:01 - INFO - Version file not found, initializing new version.
+2024-09-03 08:33:09 - INFO - Version file not found, initializing new version.
+2024-09-03 08:33:12 - ERROR - Error in main loop: Subprocesses are not supported on ios
+2024-09-03 08:33:19 - ERROR - Error in main loop: Subprocesses are not supported on ios
+2024-09-03 08:33:23 - ERROR - Error in main loop: Subprocesses are not supported on ios
