@@ -47,7 +47,7 @@ class CommandHandler:
         elif cmd == "help":
             return self.show_help()
         else:
-            return f"Command '{cmd}' is not supported."
+            return self.contextual_help(cmd)
 
     def load_history(self):
         if os.path.exists(self.history_file):
@@ -79,3 +79,16 @@ class CommandHandler:
         """
         print(help_text)
         return help_text
+
+    def contextual_help(self, command):
+        help_dict = {
+            "cd": "Change the current directory. Usage: cd <directory>",
+            "ls": "List the contents of the current directory. Usage: ls",
+            "exec": "Execute a specified module. Usage: exec <module> <args>",
+            "exploit": "Execute an exploit on a target. Usage: exploit <type> <target>",
+            "scan": "Scan a target for vulnerabilities. Usage: scan <target>",
+            "session": "Manage sessions. Usage: session <command> <args>",
+            "history": "Show command history. Usage: history",
+            "notify": "Send a notification. Usage: notify <message>",
+        }
+        return help_dict.get(command, f"No help available for command '{command}'")
