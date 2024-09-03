@@ -2,44 +2,43 @@
 
 import os
 import importlib.util
-from glob import glob
 
 class ModuleLoader:
     def __init__(self, logging_manager):
-        self.modules = {}
         self.logging_manager = logging_manager
+        self.modules = {}
+        self.plugins = {}
 
     def load_modules(self):
-        module_files = glob("modules/*.py")
-        for module_file in module_files:
-            self.load_module(module_file)
-    
-    def load_plugins(self):
-        plugin_files = glob("plugins/*.py")
-        for plugin_file in plugin_files:
-            self.load_module(plugin_file, is_plugin=True)
+        module_dir = "modules"
+        if not os.path.exists(module_dir):
+            os.makedirs(module_dir)
+        for file_name in os.listdir(module_dir):
+            if file_name.endswith(".py"):
+                module_name = file_name[:-3]
+                module_path = os.path.join(module_dir, file_name)
+                self.load_module(module_name, module_path)
 
-    def load_module(self, file_path, is_plugin=False):
-        module_name = os.path.basename(file_path)[:-3]
-        spec = importlib.util.spec_from_file_location(module_name, file_path)
+    def load_plugins(self):
+        plugin_dir = "plugins"
+        if not os.path.exists(plugin_dir):
+            os.makedirs(plugin_dir)
+        for file_name in os.listdir(plugin_dir):
+            if file_name.endswith(".py"):
+                plugin_name = file_name[:-3]
+                plugin_path = os.path.join(plugin_dir, file_name)
+                self.load_plugin(plugin_name, plugin_path)
+
+    def load_module(self, name, path):
+        spec = importlib.util.spec_from_file_location(name, path)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
-        self.modules[module_name] = module
-        module_type = "plugin" if is_plugin else "module"
-        self.logging_manager.log_info(f"Loaded {module_type}: {module_name}")
+        self.modules[name] = module
+        self.logging_manager.log_info(f"Loaded module: {name}")
 
-    def change_directory(self, args):
-        if len(args) > 0:
-            os.chdir(args[0])
-            return f"Changed directory to {os.getcwd()}"
-        else:
-            return "No directory specified."
-
-    def list_directory(self):
-        return "\n".join(os.listdir(os.getcwd()))
-
-    def execute_module(self, args):
-        if len(args) > 0 and args[0] in self.modules:
-            return self.modules[args[0]].execute(*args[1:])
-        else:
-            return "Module not found or not specified."
+    def load_plugin(self, name, path):
+        spec = importlib.util.spec_from_file_location(name, path)
+        plugin = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(plugin)
+        self.plugins[name] = plugin
+        self.logging_manager.log_info(f"Loaded plugin: {name}")
