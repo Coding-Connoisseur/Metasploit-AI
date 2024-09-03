@@ -13,19 +13,33 @@ class LoggingManager:
             format='%(asctime)s - %(levelname)s - %(message)s',
             datefmt='%Y-%m-%d %H:%M:%S'
         )
+        self.session_actions = []
 
     def log_info(self, message):
         logging.info(message)
-    
+        self.session_actions.append({"timestamp": self.get_current_timestamp(), "description": message})
+
     def log_error(self, message):
         logging.error(message)
+        self.session_actions.append({"timestamp": self.get_current_timestamp(), "description": message})
+
+    def get_session_actions(self):
+        return self.session_actions
+
+    def get_current_timestamp(self):
+        return logging.Formatter().formatTime(logging.LogRecord('', '', '', '', '', '', '', ''))
 
     def generate_report(self, session_data):
-        report_file = f"report_{session_data['session_name']}.txt"
+        report_file = f"report_{session_data['session_name']}.txt" if session_data else "session_report.txt"
         with open(report_file, 'w') as f:
             f.write("Session Report\n")
             f.write("=================\n")
-            for action in session_data['actions']:
+            for action in self.session_actions:
                 f.write(f"{action['timestamp']}: {action['description']}\n")
         logging.info(f"Report generated: {report_file}")
         return f"Report generated: {report_file}"
+
+    def send_notification(self, message):
+        # Placeholder for sending real-time notifications
+        print(f"Notification: {' '.join(message)}")
+        self.log_info(f"Notification sent: {' '.join(message)}")
