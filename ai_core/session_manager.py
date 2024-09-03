@@ -4,37 +4,65 @@ import os
 import json
 
 class SessionManager:
-    def __init__(self):
-        self.current_session = None
+    def __init__(self, ai):
+        self.ai = ai
+        self.sessions_dir = "sessions"
+        os.makedirs(self.sessions_dir, exist_ok=True)
+        self.active_session = None
 
-    def manage_session(self, args):
-        action = args[0] if len(args) > 0 else None
+    def handle_session_command(self, args):
+        action = args[0]
         name = args[1] if len(args) > 1 else None
-        session_dir = "sessions"
-        os.makedirs(session_dir, exist_ok=True)
-        session_path = os.path.join(session_dir, f"{name}.json")
 
-        if action == "save" and name:
-            if self.current_session:
-                with open(session_path, 'w') as f:
-                    json.dump(self.current_session, f)
-                return f"Session {name} saved."
-            else:
-                return "No active session to save."
-        elif action == "load" and name:
-            if os.path.exists(session_path):
-                with open(session_path, 'r') as f:
-                    self.current_session = json.load(f)
-                return f"Session {name} loaded."
-            else:
-                return f"Session {name} not found."
+        if action == "save":
+            return self.save_session(name)
+        elif action == "load":
+            return self.load_session(name)
         elif action == "list":
-            return "\n".join(os.listdir(session_dir))
-        elif action == "delete" and name:
-            if os.path.exists(session_path):
-                os.remove(session_path)
-                return f"Session {name} deleted."
-            else:
-                return f"Session {name} not found."
+            return self.list_sessions()
+        elif action == "delete":
+            return self.delete_session(name)
         else:
-            return "Invalid action or parameters."
+            return "Invalid session command."
+
+    def save_session(self, name):
+        if not name:
+            return "No session name provided."
+        session_path = os.path.join(self.sessions_dir, f"{name}.json")
+        session_data = {
+            "cwd": self.ai.cwd,
+            "actions": self.ai.logging_manager.get_session_actions(),
+        }
+        with open(session_path, 'w') as f:
+            json.dump(session_data, f)
+        self.active_session = name
+        self.ai.logging_manager.log_info(f"Session '{name}' saved.")
+        return f"Session '{name}' saved."
+
+    def load_session(self, name):
+        if not name:
+            return "No session name provided."
+        session_path = os.path.join(self.sessions_dir, f"{name}.json")
+        if not os.path.exists(session_path):
+            return f"Session '{name}' not found."
+        with open(session_path, 'r') as f:
+            session_data = json.load(f)
+        self.ai.cwd = session_data.get("cwd", self.ai.cwd)
+        self.ai.logging_manager.log_info(f"Session '{name}' loaded.")
+        self.active_session = name
+        return f"Session '{name}' loaded."
+
+    def list_sessions(self):
+        sessions = os.listdir(self.sessions_dir)
+        return "\n".join(sessions) if sessions else "No sessions found."
+
+    def delete_session(self, name):
+        if not name:
+            return "No session name provided."
+        session_path = os.path.join(self.sessions_dir, f"{name}.json")
+        if os.path.exists(session_path):
+            os.remove(session_path)
+            self.ai.logging_manager.log_info(f"Session '{name}' deleted.")
+            return f"Session '{name}' deleted."
+        else:
+            return f"Session '{name}' not found."
