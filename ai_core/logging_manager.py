@@ -33,4 +33,12 @@ class LoggingManager:
         report_file = f"report_{session_data['session_name']}.txt" if session_data else "session_report.txt"
         with open(report_file, 'w') as f:
             f.write("Session Report\n")
-            f.write("================
+            f.write("=================\n")
+            for action in self.session_actions:
+                f.write(f"{action['timestamp']}: {action['description']}\n")
+        logging.info(f"Report generated: {report_file}")
+        return f"Report generated: {report_file}"
+
+    def log_exploit_execution(self, exploit_name, target, result):
+        message = f"Exploit '{exploit_name}' executed on {target} with result: {result}"
+        self.log_info(message)
