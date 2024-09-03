@@ -2,6 +2,7 @@
 
 import os
 import json
+from cryptography.fernet import Fernet
 
 class PayloadManager:
     def __init__(self, ai):
@@ -9,6 +10,8 @@ class PayloadManager:
         self.payloads_dir = "payloads"
         os.makedirs(self.payloads_dir, exist_ok=True)
         self.payloads = self.load_payloads()
+        self.key = Fernet.generate_key()
+        self.cipher = Fernet(self.key)
 
     def load_payloads(self):
         payloads = {}
@@ -21,16 +24,41 @@ class PayloadManager:
 
     def save_payload(self, name, payload):
         payload_path = os.path.join(self.payloads_dir, f"{name}.json")
+        encrypted_payload = self.encrypt_payload(payload)
         with open(payload_path, 'w') as f:
-            json.dump(payload, f)
-        self.payloads[name] = payload
-        self.ai.logging_manager.log_info(f"Saved payload: {name}")
+            json.dump(encrypted_payload, f)
+        self.payloads[name] = encrypted_payload
+        self.ai.logging_manager.log_info(f"Saved encrypted payload: {name}")
+
+    def encrypt_payload(self, payload):
+        payload_json = json.dumps(payload).encode('utf-8')
+        encrypted_payload = self.cipher.encrypt(payload_json)
+        return encrypted_payload.decode('utf-8')
+
+    def decrypt_payload(self, encrypted_payload):
+        decrypted_payload = self.cipher.decrypt(encrypted_payload.encode('utf-8'))
+        return json.loads(decrypted_payload.decode('utf-8'))
+
+    def create_modular_payload(self, base_payload, modules):
+        modular_payload = base_payload
+        for module in modules:
+            modular_payload = self.apply_module(modular_payload, module)
+        self.ai.logging_manager.log_info(f"Created modular payload: {modular_payload}")
+        return modular_payload
+
+    def apply_module(self, payload, module):
+        # Placeholder logic for applying a module to the payload
+        # This should be replaced with actual module application logic
+        return f"{payload}-{module}"
 
     def list_payloads(self):
         return list(self.payloads.keys())
 
     def get_payload(self, name):
-        return self.payloads.get(name, None)
+        encrypted_payload = self.payloads.get(name, None)
+        if encrypted_payload:
+            return self.decrypt_payload(encrypted_payload)
+        return None
 
     def delete_payload(self, name):
         payload_path = os.path.join(self.payloads_dir, f"{name}.json")
