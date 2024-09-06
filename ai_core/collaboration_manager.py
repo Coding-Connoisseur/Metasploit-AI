@@ -1,45 +1,40 @@
 # ai_core/collaboration_manager.py
 
-import socket
-import threading
+import asyncio
+import json
+import websockets
 
 class CollaborationManager:
     def __init__(self, ai):
         self.ai = ai
-        self.clients = []
-        self.server_socket = None
+        self.clients = set()
+        self.server = None
 
-    def start_server(self, host='0.0.0.0', port=5555):
-        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server_socket.bind((host, port))
-        self.server_socket.listen(5)
-        print(f"Collaboration server started on {host}:{port}")
-        threading.Thread(target=self.accept_clients).start()
+    async def start_server(self, host, port):
+        self.server = await websockets.serve(self.handle_client, host, port)
+        self.ai.logging_manager.log_info(f"Collaboration server started on {host}:{port}")
 
-    def accept_clients(self):
-        while True:
-            client_socket, addr = self.server_socket.accept()
-            print(f"New client connected from {addr}")
-            self.clients.append(client_socket)
-            threading.Thread(target=self.handle_client, args=(client_socket,)).start()
+    async def handle_client(self, websocket, path):
+        self.clients.add(websocket)
+        try:
+            async for message in websocket:
+                await self.process_message(message, websocket)
+        finally:
+            self.clients.remove(websocket)
 
-    def handle_client(self, client_socket):
-        while True:
-            try:
-                message = client_socket.recv(1024).decode()
-                if message:
-                    print(f"Received message: {message}")
-                    self.broadcast(message, client_socket)
-            except:
-                self.clients.remove(client_socket)
-                client_socket.close()
-                break
+    async def process_message(self, message, sender):
+        data = json.loads(message)
+        if data['type'] == 'chat':
+            await self.broadcast(message, sender)
+        elif data['type'] == 'action':
+            result = self.ai.execute_command(data['command'])
+            await self.broadcast(json.dumps({'type': 'action_result', 'result': result}), None)
 
-    def broadcast(self, message, sender_socket):
+    async def broadcast(self, message, sender_socket):
         for client in self.clients:
             if client != sender_socket:
-                client.send(message.encode())
+                await client.send(message)
 
-    def send_message(self, message):
-        for client in self.clients:
-            client.send(message.encode())
+    def send_update(self, update_type, data):
+        message = json.dumps({"type": update_type, "data": data})
+        asyncio.create_task(self.broadcast(message, None))

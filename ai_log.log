@@ -5,3 +5,14 @@
 2024-09-03 08:33:12 - ERROR - Error in main loop: Subprocesses are not supported on ios
 2024-09-03 08:33:19 - ERROR - Error in main loop: Subprocesses are not supported on ios
 2024-09-03 08:33:23 - ERROR - Error in main loop: Subprocesses are not supported on ios
+2024-09-06 01:38:58 - INFO - Displayed help menu.
+2024-09-06 01:39:17 - INFO - Executed command: whoami
+2024-09-06 01:39:19 - INFO - Executed command: ls
+2024-09-06 01:39:25 - INFO - Executed command: clear
+2024-09-06 01:39:27 - INFO - Executed command: shell
+2024-09-06 01:39:29 - INFO - Executed command: clear
+2024-09-06 01:39:32 - INFO - Displayed help menu.
+2024-09-06 01:40:14 - INFO - Scanning target: 19.168.1.16
+2024-09-06 01:40:14 - INFO - Executed command: scan 19.168.1.16
+2024-09-06 03:31:31 - INFO - Displayed help menu.
+2024-09-06 03:31:49 - INFO - Executed command: exit
